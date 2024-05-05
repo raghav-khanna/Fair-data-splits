@@ -1,0 +1,8 @@
+.vscode/
+.DS_Store
+*.swp
+.flake8
+.style.yapf
+.editorconfig
+.hooks4git.ini
+tags
