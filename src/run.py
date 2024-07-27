@@ -1,4 +1,4 @@
-from models.Classifier import ClassifierClass
+from classes.Classifier import ClassifierClass
 
 
 def Allfunctions(name: str) -> int:
