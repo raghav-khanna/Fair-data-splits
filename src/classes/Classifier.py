@@ -5,7 +5,6 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import confusion_matrix
 
 classifierMapper: dict[str, FunctionType] = {
     'KNN': KNeighborsClassifier,
@@ -29,7 +28,7 @@ class ClassifierClass:
         self.__yTrain: [] = [vals[-1] for vals in trainSet]
         self.__yTest: [] = [vals[-1] for vals in testSet]
         self.__yPredict: [] = []
-        self.__confusionMatrix: [[]] = []
+        self.__result: [] = []
         print(
             'To be trained on: ', self.__xTrain, 'with targets: ',
             self.__yTrain
@@ -56,11 +55,13 @@ class ClassifierClass:
             # To check for relevant config options
             parameterisedClassifier = DecisionTreeClassifier()
         parameterisedClassifier.fit(self.__xTrain, self.__yTrain)
-        self.__yPredict = parameterisedClassifier.predict(self.__xTest)
-        self.__confusionMatrix = confusion_matrix(
-            self.__yTest, self.__yPredict
-        )
-        return self.__confusionMatrix
+        self.__yPredict: [float | str | int
+                          ] = parameterisedClassifier.predict(self.__xTest)
+        self.__result: [[[float | int], str | float | int, str | float | int]
+                        ] = []
+        for i in range(len(self.__xTest)):
+            self.__result.append([self.__xTest[i], self.__yTest[i], self.__yPredict[i]])
+        return self.__result
 
     def performance(self):
         print('**********\nPerformance of', self.__classifierName, ': ')
@@ -72,16 +73,7 @@ class ClassifierClass:
         print('|Attributes|Expected|Predicted|')
         for i in range(len(self.__xTest)):
             print(
-                '|', self.__xTest[i], '  |  ', self.__yTest[i], '  |  ',
-                self.__yPredict[i], '|'
+                '|', self.__result[i][0], '  |  ', self.__result[i][1], '  |  ',
+                self.__result[i][2], '|'
             )
-        print('\n\nConfusion Matrix:')
-        print(
-            '| True Negative:', self.__confusionMatrix[0][0],
-            '|False Positive:', self.__confusionMatrix[0][1], '|'
-        )
-        print(
-            '|False Negative:', self.__confusionMatrix[1][0],
-            '| True Positive:', self.__confusionMatrix[1][1], '|'
-        )
         print('\n\n**********')

@@ -9,8 +9,8 @@ def Allfunctions(name: str) -> int:
                 [-2, -1, 0]]
     testSet = [[2, 2, 1], [-2, -2, 0], [0, 0, 0], [3, 1, 0], [3, 1, 0]]
     clf = ClassifierClass(trainSet, testSet)
-    confusionMatrix = clf.evaluate(k = 2)
-    print(confusionMatrix)
+    results = clf.evaluate(k = 2)
+    print(results)
     clf.performance()
 
     return 1
