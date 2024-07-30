@@ -57,10 +57,13 @@ class ClassifierClass:
         parameterisedClassifier.fit(self.__xTrain, self.__yTrain)
         self.__yPredict: [float | str | int
                           ] = parameterisedClassifier.predict(self.__xTest)
-        self.__result: [[[float | int], str | float | int, str | float | int]
-                        ] = []
+        self.__result: [[
+            int, [float | int], str | float | int, str | float | int
+        ]] = []
         for i in range(len(self.__xTest)):
-            self.__result.append([self.__xTest[i], self.__yTest[i], self.__yPredict[i]])
+            self.__result.append([
+                i + 1, self.__xTest[i], self.__yTest[i], self.__yPredict[i]
+            ])
         return self.__result
 
     def performance(self):
@@ -70,10 +73,10 @@ class ClassifierClass:
         for i in range(len(self.__xTrain)):
             print('|', self.__xTrain[i], '  |  ', self.__yTrain[i], '  |')
         print('\n\nTest Results:')
-        print('|Attributes|Expected|Predicted|')
+        print('|Id|Attributes|Expected|Predicted|')
         for i in range(len(self.__xTest)):
             print(
-                '|', self.__result[i][0], '  |  ', self.__result[i][1], '  |  ',
-                self.__result[i][2], '|'
+                '|', self.__result[i][0], '|', self.__result[i][1], '  |  ',
+                self.__result[i][2], '  |  ', self.__result[i][3], '|'
             )
         print('\n\n**********')
