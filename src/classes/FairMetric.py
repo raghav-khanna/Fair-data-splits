@@ -9,9 +9,11 @@ from typing import List
 
 class FairMetric:
 
-    def __init__(self, classificationOutput: List[List[any], any, any],  # The output of the classifier includes X_test, y_test, y_pred
-                 sensitiveAttributeIndex: int,  # The index of the sensitive attribute in the dataset
-                 sensitiveAttributeValue: int,  # The value of the sensitive attribute (assuming binary sensitive attribute)
+    def __init__(
+            self, 
+            classificationOutput: List[List[any], any, any],  # The output of the classifier includes X_test, y_test, y_pred
+            sensitiveAttributeIndex: int,  # The index of the sensitive attribute in the dataset
+            sensitiveAttributeValue: int,  # The value of the sensitive attribute (assuming binary sensitive attribute)
                  ) -> None:
         self.__classificationOutput: List[List[any], any, any] = classificationOutput
         self.__sensitiveAttributeIndex: int = sensitiveAttributeIndex
