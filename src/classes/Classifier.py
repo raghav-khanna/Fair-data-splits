@@ -6,22 +6,12 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-classifierMapper: dict[str, FunctionType] = {
-    'KNN': KNeighborsClassifier,
-    'SVC': SVC,
-    'GNB': GaussianNB,
-    'DeT': DecisionTreeClassifier
-}
+classifierMapper: dict[str, FunctionType] = {'KNN': KNeighborsClassifier, 'SVC': SVC, 'GNB': GaussianNB, 'DeT': DecisionTreeClassifier}
 
 
 class ClassifierClass:
 
-    def __init__(
-        self,
-        trainSet: [],
-        testSet: [],
-        classifierName: str = 'KNN',
-    ) -> None:
+    def __init__(self, trainSet: [], testSet: [], classifierName: str = 'KNN', ) -> None:
         self.__classifierName: str = classifierName
         self.__xTrain: [] = [vals[0:len(vals) - 1] for vals in trainSet]
         self.__xTest: [] = [vals[0:len(vals) - 1] for vals in testSet]
@@ -41,10 +31,7 @@ class ClassifierClass:
         parameterisedClassifier = []
         if classifierMapper[self.__classifierName] == KNeighborsClassifier:
             k = int(kwargs.get('k'))
-            parameterisedClassifier = Pipeline(
-                steps = [("scaler", StandardScaler()
-                          ), ("knn", KNeighborsClassifier(n_neighbors = k))]
-            )
+            parameterisedClassifier = Pipeline(steps = [("scaler", StandardScaler()), ("knn", KNeighborsClassifier(n_neighbors = k))])
         elif classifierMapper[self.__classifierName] == SVC:
             # To check for relevant config options
             parameterisedClassifier = SVC()
