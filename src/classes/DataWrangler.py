@@ -24,7 +24,7 @@ class DataWranglerClass:
         '.csv': pd.read_csv,
         '.xlsx': pd.read_excel,
         '.xlx': pd.read_excel,
-        'json': pd.read_json,
+        '.json': pd.read_json,
         '.xml': pd.read_xml,
         '.parquet': pd.read_parquet,
         '.feather': pd.read_feather,
