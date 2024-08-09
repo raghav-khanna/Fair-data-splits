@@ -39,7 +39,7 @@ class DataWranglerClass:
 
     __handle_missing_options: list[str] = ['delete', 'leave', 'error', 'mean', 'median']
 
-    def __init__(self, file_path: str, handle_missing: str = 'leave', cols_to_encode: list[str] = []):
+    def __init__(self, file_path: str, handle_missing: str = 'leave', cols_to_encode: list[str] | None = []):
         log_prog('Enter classes/' + type(self).__name__ + '.constructor')
 
         log_prog('Perform parameter pre-checks')
@@ -47,7 +47,7 @@ class DataWranglerClass:
         if handle_missing not in self.__handle_missing_options:
             log_err('Invalid handle_missing option provided')
             premature_return = True
-        if len(cols_to_encode) == 0 and cols_to_encode is not None:
+        if cols_to_encode is not None and len(cols_to_encode) == 0:
             log_err('Please provide columns which are to be one-hot encoded, or pass "None"')
             premature_return = True
         if premature_return:
@@ -62,8 +62,9 @@ class DataWranglerClass:
         log_prog('Clean data')
         self.__dataset = self.__clean_data(handle_missing)
 
-        log_prog('One-hot encode data')
-        self.__dataset = self.__one_hot_encoder(cols_to_encode)
+        if cols_to_encode is not None:
+            log_prog('One-hot encode data')
+            self.__dataset = self.__one_hot_encoder(cols_to_encode)
         log_prog('Exit classes/' + type(self).__name__ + '.constructor')
 
     def __clean_data(self, handle_missing: str) -> pd.DataFrame:
@@ -73,19 +74,19 @@ class DataWranglerClass:
         log_err('TODO: Handle for each case in' + str(self.__handle_missing_options))
         log_prog('Exit classes/' + type(self).__name__ + '.clean_data')
 
-    def __one_hot_encoder(self, cols_to_encode: list[str] = []) -> pd.DataFrame:
+    def __one_hot_encoder(self, cols_to_encode: list[str] | None = []) -> pd.DataFrame:
         log_prog('Enter classes/' + type(self).__name__ + '.one_hot_encoder')
         log_prog('Perform parameter pre-checks')
-        premature_return: bool = False
-        if len(cols_to_encode) == 0 and cols_to_encode is not None:
+        if cols_to_encode is None:
+            log_prog('No columns to hot-encode')
+            return self.__dataset
+        if len(cols_to_encode) == 0:
             log_err('Please provide columns which are to be one-hot encoded, or pass "None"')
-            premature_return = True
+            return []
         for column in cols_to_encode:
             if column not in self.__dataset.columns:
                 log_err('Column to encode "' + str(column) + '" is absent in the data present in the file')
-                premature_return = True
-        if premature_return:
-            return []
+                return []
         log_prog('Complete parameter pre-checks')
         log_prog('One-hot encode provided columns')
         for column in cols_to_encode:
@@ -100,6 +101,26 @@ class DataWranglerClass:
         # TODO: Check if there is any entry in dataset that is not a number
         log_prog('Exit classes/' + type(self).__name__ + '.one_hot_encoder')
         return self.__dataset
+
+    def convert_yn_tf_to_binary(self, cols_to_encode: list[str] | None = []) -> None:
+        log_prog('Enter classes/' + type(self).__name__ + '.convert_yn_tf_to_binary')
+        log_prog('Perform parameter pre-checks')
+        if cols_to_encode is None:
+            log_prog('No columns to encode')
+            return
+        if len(cols_to_encode) == 0:
+            log_err('Please provide columns which are to be one-hot encoded, or pass "None"')
+            return
+        for column in cols_to_encode:
+            if column not in self.__dataset.columns:
+                log_err('Column to encode "' + str(column) + '" is absent in the data present in the file')
+                return
+        log_prog('Complete parameter pre-checks')
+        for column in cols_to_encode:
+            log_prog('Encode column "' + str(column) + '"')
+            self.__dataset[column].replace(['True', 'T', 'true', 't', 'yes', 'Yes', 'Y', 'y', '1'], 1, inplace=True)
+            self.__dataset[column].replace(['False', 'F', 'false', 'f', 'no', 'No', 'N', 'n', '0'], 0, inplace=True)
+        log_prog('Exit classes/' + type(self).__name__ + '.convert_yn_tf_to_binary')
 
     def get_processed_dataframe(self) -> pd.DataFrame:
         return self.__dataset
