@@ -4,6 +4,7 @@ from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.pipeline import Pipeline
+from sklearn.metrics import confusion_matrix
 '''
 
 TODO: Document the file-functioning well.
@@ -56,6 +57,9 @@ class DataClassifierClass:
         self.__result: [[int, [float | int], str | float | int, str | float | int]] = []
         for i in range(len(self.__x_test)):
             self.__result.append([i + 1, self.__x_test[i], self.__y_test[i], self.__y_predict[i]])
+        self.__confusionMatrix = confusion_matrix(
+            self.__y_test, self.__y_predict
+        )
         log_prog('Exit classes/' + type(self).__name__ + '.evaluate')
         return self.__result
 
@@ -69,4 +73,14 @@ class DataClassifierClass:
         print('|Id|Attributes|Expected|Predicted|')
         for i in range(len(self.__x_test)):
             print('|', self.__result[i][0], '|', self.__result[i][1], '  |  ', self.__result[i][2], '  |  ', self.__result[i][3], '|')
+        print('\n\n**********')
+        print('\n\nConfusion Matrix:')
+        print(
+            '| True Negative:', self.__confusionMatrix[0][0],
+            '|False Positive:', self.__confusionMatrix[0][1], '|'
+        )
+        print(
+            '|False Negative:', self.__confusionMatrix[1][0],
+            '| True Positive:', self.__confusionMatrix[1][1], '|'
+        )
         print('\n\n**********')
