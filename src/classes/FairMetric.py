@@ -9,189 +9,186 @@ from typing import List
 
 class FairMetric:
 
-    def __init__(
-            self, 
-            classificationOutput: List[List[any], any, any],  # The output of the classifier includes X_test, y_test, y_pred
-            sensitiveAttributeIndex: int,  # The index of the sensitive attribute in the dataset
-            sensitiveAttributeValue: int,  # The value of the sensitive attribute (assuming binary sensitive attribute)
+    def __init__(self, classification_output: List[List[any], any, any],  # The output of the classifier includes X_test, y_test, y_pred
+                 sensitive_attribute_index: int,  # The index of the sensitive attribute in the dataset
+                 sensitive_attribute_value: int,  # The value of the sensitive attribute (assuming binary sensitive attribute)
                  ) -> None:
-        self.__classificationOutput: List[List[any], any, any] = classificationOutput
-        self.__sensitiveAttributeIndex: int = sensitiveAttributeIndex
-        self.__sensitiveAttributeValue: int = sensitiveAttributeValue
+        self.__classification_output: List[List[any], any, any] = classification_output
+        self.__sensitive_attribute_index: int = sensitive_attribute_index
+        self.__sensitive_attribute_value: int = sensitive_attribute_value
 
         print("************Fairness Metric************")
-
-        print('Sensitive Attribute Index: ', self.__sensitiveAttributeIndex)
-        print('Sensitive Attribute Value: ', self.__sensitiveAttributeValue)
-
+        print('Sensitive Attribute Index: ', self.__sensitive_attribute_index)
+        print('Sensitive Attribute Value: ', self.__sensitive_attribute_value)
         print("****************************************")
-        # Segregate Classification Output based on the sensitive attribute (One will be the protected group with the given sensitive attribute value and the other will be the unprotected group)
-        self.__protectedGroup: List[List[any], any, any] = []
-        self.__unprotectedGroup: List[List[any], any, any] = []
-        for j in range(len(self.__classificationOutput)):
-            if self.__classificationOutput[j][0][self.__sensitiveAttributeIndex] == self.__sensitiveAttributeValue:
-                self.__protectedGroup.append(self.__classificationOutput[j])
+
+        # Segregate classification output based on the sensitive attribute (One will be the protected group with the given sensitive attribute value and the other will be the unprotected group)
+        self.__protected_group: List[List[any], any, any] = []
+        self.__unprotected_group: List[List[any], any, any] = []
+        for j in range(len(self.__classification_output)):
+            if self.__classification_output[j][0][self.__sensitive_attribute_index] == self.__sensitive_attribute_value:
+                self.__protected_group.append(self.__classification_output[j])
             else:
-                self.__unprotectedGroup.append(self.__classificationOutput[j])
+                self.__unprotected_group.append(self.__classification_output[j])
 
     # Method to create confusion matrix for both protected and unprotected groups (Not valid for multi-label classification)
-    def __createConfusionMatrix(self, group: List[List[any], any, any]) -> List[List[int]]:
-        confusionMatrix: List[List[int]] = [[0, 0], [0, 0]]  # [[TN, FP], [FN, TP]]
+    def __create_confusion_matrix(self, group: List[List[any], any, any]) -> List[List[int]]:
+        confusion_matrix: List[List[int]] = [[0, 0], [0, 0]]  # [[TN, FP], [FN, TP]]
         for i in range(len(group)):
             if group[i][1] == 0 and group[i][2] == 0:
-                confusionMatrix[0][0] += 1
+                confusion_matrix[0][0] += 1
             elif group[i][1] == 0 and group[i][2] == 1:
-                confusionMatrix[0][1] += 1
+                confusion_matrix[0][1] += 1
             elif group[i][1] == 1 and group[i][2] == 0:
-                confusionMatrix[1][0] += 1
+                confusion_matrix[1][0] += 1
             elif group[i][1] == 1 and group[i][2] == 1:
-                confusionMatrix[1][1] += 1
-        return confusionMatrix
+                confusion_matrix[1][1] += 1
+        return confusion_matrix
 
-    def checkStatisticalParity(self) -> bool:
+    def check_statistical_parity(self) -> List[bool, dict]:
         # Confusion matrix calculation for protected and unprotected groups
-        protectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__protectedGroup)
-        unprotectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__unprotectedGroup)
+        protected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__protected_group)
+        unprotected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__unprotected_group)
 
-        # Statistical Parity Check
-        protectedGroupAcceptanceRate: float = (protectedGroupConfusionMatrix[1][1] + protectedGroupConfusionMatrix[0][1]) / (protectedGroupConfusionMatrix[0][0] + protectedGroupConfusionMatrix[0][1] + protectedGroupConfusionMatrix[1][0] + protectedGroupConfusionMatrix[1][1])
-        unprotectedGroupAcceptanceRate: float = (unprotectedGroupConfusionMatrix[1][1] + unprotectedGroupConfusionMatrix[0][1]) / (unprotectedGroupConfusionMatrix[0][0] + unprotectedGroupConfusionMatrix[0][1] + unprotectedGroupConfusionMatrix[1][0] + unprotectedGroupConfusionMatrix[1][1])
+        # Statistical parity check
+        protected_group_acceptance_rate: float = (protected_group_confusion_matrix[1][1] + protected_group_confusion_matrix[0][1]) / (protected_group_confusion_matrix[0][0] + protected_group_confusion_matrix[0][1] + protected_group_confusion_matrix[1][0] + protected_group_confusion_matrix[1][1])
+        unprotected_group_acceptance_rate: float = (unprotected_group_confusion_matrix[1][1] + unprotected_group_confusion_matrix[0][1]) / (unprotected_group_confusion_matrix[0][0] + unprotected_group_confusion_matrix[0][1] + unprotected_group_confusion_matrix[1][0] + unprotected_group_confusion_matrix[1][1])
 
         print("************Statistical Parity************")
-        print('Protected Group Acceptance Rate: ', protectedGroupAcceptanceRate)
-        print('Unprotected Group Acceptance Rate: ', unprotectedGroupAcceptanceRate)
+        print('Protected Group Acceptance Rate: ', protected_group_acceptance_rate)
+        print('Unprotected Group Acceptance Rate: ', unprotected_group_acceptance_rate)
         print("*******************************************")
 
-        return protectedGroupAcceptanceRate == unprotectedGroupAcceptanceRate
+        return [protected_group_acceptance_rate == unprotected_group_acceptance_rate, {"accepted_rate_diff": abs(protected_group_acceptance_rate - unprotected_group_acceptance_rate)}]
 
-    def checkConditionalParity(self, resolvingFeatureIndex: int, resolvingFeatureValue: any) -> bool:
+    def check_conditional_parity(self, resolving_feature_index: int, resolving_feature_value: any) -> List[bool, dict]:
         # Check for protected group
-        protectedGroupResolvingFeatureCount: int = 0
-        protectedGroupResolvingFeaturePositiveCount: int = 0
-        for i in range(len(self.__protectedGroup)):
-            if self.__protectedGroup[i][0][resolvingFeatureIndex] == resolvingFeatureValue:
-                protectedGroupResolvingFeatureCount += 1
-                if self.__protectedGroup[i][2] == 1:
-                    protectedGroupResolvingFeaturePositiveCount += 1
-        protectedGroupConditionalAcceptanceRate: float = protectedGroupResolvingFeaturePositiveCount / protectedGroupResolvingFeatureCount
+        protected_group_resolving_feature_count: int = 0
+        protected_group_resolving_feature_positive_count: int = 0
+        for i in range(len(self.__protected_group)):
+            if self.__protected_group[i][0][resolving_feature_index] == resolving_feature_value:
+                protected_group_resolving_feature_count += 1
+                if self.__protected_group[i][2] == 1:
+                    protected_group_resolving_feature_positive_count += 1
+        protected_group_conditional_acceptance_rate: float = protected_group_resolving_feature_positive_count / protected_group_resolving_feature_count
 
         # Check for unprotected group
-        unprotectedGroupResolvingFeatureCount: int = 0
-        unprotectedGroupResolvingFeaturePositiveCount: int = 0
-        for i in range(len(self.__unprotectedGroup)):
-            if self.__unprotectedGroup[i][0][resolvingFeatureIndex] == resolvingFeatureValue:
-                unprotectedGroupResolvingFeatureCount += 1
-                if self.__unprotectedGroup[i][2] == 1:
-                    unprotectedGroupResolvingFeaturePositiveCount += 1
-        unprotectedGroupConditionalAcceptanceRate: float = unprotectedGroupResolvingFeaturePositiveCount / unprotectedGroupResolvingFeatureCount
+        unprotected_group_resolving_feature_count: int = 0
+        unprotected_group_resolving_feature_positive_count: int = 0
+        for i in range(len(self.__unprotected_group)):
+            if self.__unprotected_group[i][0][resolving_feature_index] == resolving_feature_value:
+                unprotected_group_resolving_feature_count += 1
+                if self.__unprotected_group[i][2] == 1:
+                    unprotected_group_resolving_feature_positive_count += 1
+        unprotected_group_conditional_acceptance_rate: float = unprotected_group_resolving_feature_positive_count / unprotected_group_resolving_feature_count
 
         print("************Conditional Parity************")
-        print('Protected Group Conditional Acceptance Rate: ', protectedGroupConditionalAcceptanceRate)
-        print('Unprotected Group Conditional Acceptance Rate: ', unprotectedGroupConditionalAcceptanceRate)
+        print('Protected Group Conditional Acceptance Rate: ', protected_group_conditional_acceptance_rate)
+        print('Unprotected Group Conditional Acceptance Rate: ', unprotected_group_conditional_acceptance_rate)
         print("******************************************")
 
-        return protectedGroupConditionalAcceptanceRate == unprotectedGroupConditionalAcceptanceRate
+        return [protected_group_conditional_acceptance_rate == unprotected_group_conditional_acceptance_rate, {"conditional_acc_rate_diff": abs(protected_group_conditional_acceptance_rate - unprotected_group_conditional_acceptance_rate)}]
 
-    def checkEqualizedOdds(self) -> bool:
+    def check_equalized_odds(self) -> List[bool, dict]:
         # Calculate confusion matrix for protected and unprotected groups
-        protectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__protectedGroup)
-        unprotectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__unprotectedGroup)
+        protected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__protected_group)
+        unprotected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__unprotected_group)
 
-        # Calcuate True Positive Rate and False Positive Rate for both groups
-        protectedGroupTruePositiveRate: float = protectedGroupConfusionMatrix[1][1] / (protectedGroupConfusionMatrix[1][0] + protectedGroupConfusionMatrix[1][1])
-        protectedGroupFalsePositiveRate: float = protectedGroupConfusionMatrix[0][1] / (protectedGroupConfusionMatrix[0][0] + protectedGroupConfusionMatrix[0][1])
-        unprotectedGroupTruePositiveRate: float = unprotectedGroupConfusionMatrix[1][1] / (unprotectedGroupConfusionMatrix[1][0] + unprotectedGroupConfusionMatrix[1][1])
-        unprotectedGroupFalsePositiveRate: float = unprotectedGroupConfusionMatrix[0][1] / (unprotectedGroupConfusionMatrix[0][0] + unprotectedGroupConfusionMatrix[0][1])
+        # Calculate true positive rate and false positive rate for both groups
+        protected_group_true_positive_rate: float = protected_group_confusion_matrix[1][1] / (protected_group_confusion_matrix[1][0] + protected_group_confusion_matrix[1][1])
+        protected_group_false_positive_rate: float = protected_group_confusion_matrix[0][1] / (protected_group_confusion_matrix[0][0] + protected_group_confusion_matrix[0][1])
+        unprotected_group_true_positive_rate: float = unprotected_group_confusion_matrix[1][1] / (unprotected_group_confusion_matrix[1][0] + unprotected_group_confusion_matrix[1][1])
+        unprotected_group_false_positive_rate: float = unprotected_group_confusion_matrix[0][1] / (unprotected_group_confusion_matrix[0][0] + unprotected_group_confusion_matrix[0][1])
 
         print("************Equalized Odds************")
-        print('Protected Group True Positive Rate: ', protectedGroupTruePositiveRate)
-        print('Protected Group False Positive Rate: ', protectedGroupFalsePositiveRate)
-        print('Unprotected Group True Positive Rate: ', unprotectedGroupTruePositiveRate)
-        print('Unprotected Group False Positive Rate: ', unprotectedGroupFalsePositiveRate)
+        print('Protected Group True Positive Rate: ', protected_group_true_positive_rate)
+        print('Protected Group False Positive Rate: ', protected_group_false_positive_rate)
+        print('Unprotected Group True Positive Rate: ', unprotected_group_true_positive_rate)
+        print('Unprotected Group False Positive Rate: ', unprotected_group_false_positive_rate)
         print("***************************************")
 
-        return protectedGroupTruePositiveRate == unprotectedGroupTruePositiveRate and protectedGroupFalsePositiveRate == unprotectedGroupFalsePositiveRate
+        return [protected_group_true_positive_rate == unprotected_group_true_positive_rate and protected_group_false_positive_rate == unprotected_group_false_positive_rate, {"true_positive_rate_diff": abs(protected_group_true_positive_rate - unprotected_group_true_positive_rate), "false_positive_rate_diff": abs(protected_group_false_positive_rate - unprotected_group_false_positive_rate)}]
 
-    def checkEqualOpportunity(self) -> bool:
+    def check_equal_opportunity(self) -> List[bool, dict]:
         # Calculate confusion matrix for protected and unprotected groups
-        protectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__protectedGroup)
-        unprotectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__unprotectedGroup)
+        protected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__protected_group)
+        unprotected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__unprotected_group)
 
-        # Calcuate True Positive Rate and False Positive Rate for both groups
-        protectedGroupTruePositiveRate: float = protectedGroupConfusionMatrix[1][1] / (protectedGroupConfusionMatrix[1][0] + protectedGroupConfusionMatrix[1][1])
-        unprotectedGroupTruePositiveRate: float = unprotectedGroupConfusionMatrix[1][1] / (unprotectedGroupConfusionMatrix[1][0] + unprotectedGroupConfusionMatrix[1][1])
+        # Calculate true positive rate and false positive rate for both groups
+        protected_group_true_positive_rate: float = protected_group_confusion_matrix[1][1] / (protected_group_confusion_matrix[1][0] + protected_group_confusion_matrix[1][1])
+        unprotected_group_true_positive_rate: float = unprotected_group_confusion_matrix[1][1] / (unprotected_group_confusion_matrix[1][0] + unprotected_group_confusion_matrix[1][1])
 
         print("************Equal Opportunity************")
-        print('Protected Group True Positive Rate: ', protectedGroupTruePositiveRate)
-        print('Unprotected Group True Positive Rate: ', unprotectedGroupTruePositiveRate)
+        print('Protected Group True Positive Rate: ', protected_group_true_positive_rate)
+        print('Unprotected Group True Positive Rate: ', unprotected_group_true_positive_rate)
         print("***************************************")
 
-        return protectedGroupTruePositiveRate == unprotectedGroupTruePositiveRate
+        return [protected_group_true_positive_rate == unprotected_group_true_positive_rate, {"true_positive_rate_diff": abs(protected_group_true_positive_rate - unprotected_group_true_positive_rate)}]
 
-    def checkPredictiveEquality(self) -> bool:
+    def check_predictive_equality(self) -> List[bool, dict]:
         # Calculate confusion matrix for protected and unprotected groups
-        protectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__protectedGroup)
-        unprotectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__unprotectedGroup)
+        protected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__protected_group)
+        unprotected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__unprotected_group)
 
-        # Calcuate True Positive Rate and False Positive Rate for both groups
-        protectedGroupFalsePositiveRate: float = protectedGroupConfusionMatrix[0][1] / (protectedGroupConfusionMatrix[0][0] + protectedGroupConfusionMatrix[0][1])
-        unprotectedGroupFalsePositiveRate: float = unprotectedGroupConfusionMatrix[0][1] / (unprotectedGroupConfusionMatrix[0][0] + unprotectedGroupConfusionMatrix[0][1])
+        # Calculate true positive rate and false positive rate for both groups
+        protected_group_false_positive_rate: float = protected_group_confusion_matrix[0][1] / (protected_group_confusion_matrix[0][0] + protected_group_confusion_matrix[0][1])
+        unprotected_group_false_positive_rate: float = unprotected_group_confusion_matrix[0][1] / (unprotected_group_confusion_matrix[0][0] + unprotected_group_confusion_matrix[0][1])
 
-        print("************EPredictive Equality************")
-        print('Protected Group False Positive Rate: ', protectedGroupFalsePositiveRate)
-        print('Unprotected Group False Positive Rate: ', unprotectedGroupFalsePositiveRate)
-        print("***************************************")
+        print("************Predictive Equality************")
+        print('Protected Group False Positive Rate: ', protected_group_false_positive_rate)
+        print('Unprotected Group False Positive Rate: ', unprotected_group_false_positive_rate)
+        print("********************************************")
 
-        return protectedGroupFalsePositiveRate == unprotectedGroupFalsePositiveRate
+        return [protected_group_false_positive_rate == unprotected_group_false_positive_rate, {"false_positive_rate_diff": abs(protected_group_false_positive_rate - unprotected_group_false_positive_rate)}]
 
-    def checkConditionalUseAccuracyEquality(self) -> bool:
+    def check_conditional_use_accuracy_equality(self) -> List[bool, dict]:
         # Calculate confusion matrix for protected and unprotected groups
-        protectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__protectedGroup)
-        unprotectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__unprotectedGroup)
+        protected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__protected_group)
+        unprotected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__unprotected_group)
 
-        # Calcuate Positive and Negative Predictive Values for both groups
-        protectedGroupPPV: float = protectedGroupConfusionMatrix[1][1] / (protectedGroupConfusionMatrix[1][1] + protectedGroupConfusionMatrix[0][1])
-        unprotectedGroupPPV: float = unprotectedGroupConfusionMatrix[1][1] / (unprotectedGroupConfusionMatrix[1][1] + unprotectedGroupConfusionMatrix[0][1])
-        protectedGroupNPV: float = protectedGroupConfusionMatrix[0][0] / (protectedGroupConfusionMatrix[0][0] + protectedGroupConfusionMatrix[1][0])
-        unprotectedGroupNPV: float = unprotectedGroupConfusionMatrix[0][0] / (unprotectedGroupConfusionMatrix[0][0] + unprotectedGroupConfusionMatrix[1][0])
+        # Calculate positive and negative predictive values for both groups
+        protected_group_ppv: float = protected_group_confusion_matrix[1][1] / (protected_group_confusion_matrix[1][1] + protected_group_confusion_matrix[0][1])
+        unprotected_group_ppv: float = unprotected_group_confusion_matrix[1][1] / (unprotected_group_confusion_matrix[1][1] + unprotected_group_confusion_matrix[0][1])
+        protected_group_npv: float = protected_group_confusion_matrix[0][0] / (protected_group_confusion_matrix[0][0] + protected_group_confusion_matrix[1][0])
+        unprotected_group_npv: float = unprotected_group_confusion_matrix[0][0] / (unprotected_group_confusion_matrix[0][0] + unprotected_group_confusion_matrix[1][0])
 
         print("************Conditional Use Accuracy Equality************")
-        print('Protected Group Positive Predictive Value: ', protectedGroupPPV)
-        print('Protected Group Negative Predictive Value: ', protectedGroupNPV)
-        print('Unprotected Group Positive Predictive Value: ', unprotectedGroupPPV)
-        print('Unprotected Group Negative Predictive Value: ', unprotectedGroupNPV)
+        print('Protected Group Positive Predictive Value: ', protected_group_ppv)
+        print('Protected Group Negative Predictive Value: ', protected_group_npv)
+        print('Unprotected Group Positive Predictive Value: ', unprotected_group_ppv)
+        print('Unprotected Group Negative Predictive Value: ', unprotected_group_npv)
         print("*********************************************************")
 
-        return protectedGroupPPV == unprotectedGroupPPV and protectedGroupNPV == unprotectedGroupNPV
+        return [protected_group_ppv == unprotected_group_ppv and protected_group_npv == unprotected_group_npv, {"ppv_diff": abs(protected_group_ppv - unprotected_group_ppv), "npv_diff": abs(protected_group_npv - unprotected_group_npv)}]
 
-    def checkPredictiveParity(self) -> bool:
+    def check_predictive_parity(self) -> List[bool, dict]:
         # Calculate confusion matrix for protected and unprotected groups
-        protectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__protectedGroup)
-        unprotectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__unprotectedGroup)
+        protected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__protected_group)
+        unprotected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__unprotected_group)
 
-        # Calcuate Positive and Negative Predictive Values for both groups
-        protectedGroupPPV: float = protectedGroupConfusionMatrix[1][1] / (protectedGroupConfusionMatrix[1][1] + protectedGroupConfusionMatrix[0][1])
-        unprotectedGroupPPV: float = unprotectedGroupConfusionMatrix[1][1] / (unprotectedGroupConfusionMatrix[1][1] + unprotectedGroupConfusionMatrix[0][1])
+        # Calculate positive and negative predictive values for both groups
+        protected_group_ppv: float = protected_group_confusion_matrix[1][1] / (protected_group_confusion_matrix[1][1] + protected_group_confusion_matrix[0][1])
+        unprotected_group_ppv: float = unprotected_group_confusion_matrix[1][1] / (unprotected_group_confusion_matrix[1][1] + unprotected_group_confusion_matrix[0][1])
 
         print("************Predictive Parity****************************")
-        print('Protected Group Positive Predictive Value: ', protectedGroupPPV)
-        print('Unprotected Group Positive Predictive Value: ', unprotectedGroupPPV)
+        print('Protected Group Positive Predictive Value: ', protected_group_ppv)
+        print('Unprotected Group Positive Predictive Value: ', unprotected_group_ppv)
         print("*********************************************************")
 
-        return protectedGroupPPV == unprotectedGroupPPV
+        return [protected_group_ppv == unprotected_group_ppv, {"ppv_diff": abs(protected_group_ppv - unprotected_group_ppv)}]
 
-    def checkOverallAccuracyEquality(self) -> bool:
+    def check_overall_accuracy_equality(self) -> List[bool, dict]:
         # Calculate confusion matrix for protected and unprotected groups
-        protectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__protectedGroup)
-        unprotectedGroupConfusionMatrix: List[List[int]] = self.__createConfusionMatrix(self.__unprotectedGroup)
+        protected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__protected_group)
+        unprotected_group_confusion_matrix: List[List[int]] = self.__create_confusion_matrix(self.__unprotected_group)
 
-        # Calcuate Overall Accuracy for both groups
-        protectedGroupOverallAccuracy: float = (protectedGroupConfusionMatrix[0][0] + protectedGroupConfusionMatrix[1][1]) / (protectedGroupConfusionMatrix[0][0] + protectedGroupConfusionMatrix[0][1] + protectedGroupConfusionMatrix[1][0] + protectedGroupConfusionMatrix[1][1])
-        unprotectedGroupOverallAccuracy: float = (unprotectedGroupConfusionMatrix[0][0] + unprotectedGroupConfusionMatrix[1][1]) / (unprotectedGroupConfusionMatrix[0][0] + unprotectedGroupConfusionMatrix[0][1] + unprotectedGroupConfusionMatrix[1][0] + unprotectedGroupConfusionMatrix[1][1])
+        # Calculate overall accuracy for both groups
+        protected_group_overall_accuracy: float = (protected_group_confusion_matrix[0][0] + protected_group_confusion_matrix[1][1]) / (protected_group_confusion_matrix[0][0] + protected_group_confusion_matrix[0][1] + protected_group_confusion_matrix[1][0] + protected_group_confusion_matrix[1][1])
+        unprotected_group_overall_accuracy: float = (unprotected_group_confusion_matrix[0][0] + unprotected_group_confusion_matrix[1][1]) / (unprotected_group_confusion_matrix[0][0] + unprotected_group_confusion_matrix[0][1] + unprotected_group_confusion_matrix[1][0] + unprotected_group_confusion_matrix[1][1])
 
         print("************Overall Accuracy Equality************")
-        print('Protected Group Overall Accuracy: ', protectedGroupOverallAccuracy)
-        print('Unprotected Group Overall Accuracy: ', unprotectedGroupOverallAccuracy)
+        print('Protected Group Overall Accuracy: ', protected_group_overall_accuracy)
+        print('Unprotected Group Overall Accuracy: ', unprotected_group_overall_accuracy)
         print("************************************************")
 
-        return protectedGroupOverallAccuracy == unprotectedGroupOverallAccuracy
+        return [protected_group_overall_accuracy == unprotected_group_overall_accuracy, {"OverallAccuracyDiff": abs(protected_group_overall_accuracy - unprotected_group_overall_accuracy)}]
