@@ -7,7 +7,7 @@ Data Wrangler:
     - Data Cleaning
     - Data One-Shot Encoding
 - Methods
-    - ...
+    - Binary encoding yN, tF columns
 
 '''
 import os
