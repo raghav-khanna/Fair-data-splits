@@ -9,7 +9,7 @@ def all_functions(name: str) -> int:
 
     dataset = DataWranglerClass('/Users/pranavchatur/Fair-data-splits/data/student.csv', cols_to_encode = None)
     # dataset.convert_yn_tf_to_binary(cols_to_encode=['age'])
-    dataset.convert_yn_tf_to_binary(cols_to_encode=None)
+    dataset.convert_yn_tf_to_binary(cols_to_encode = None)
     df = dataset.get_processed_dataframe()
     print(df)
 
