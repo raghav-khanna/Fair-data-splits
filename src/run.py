@@ -1,24 +1,24 @@
 from classes.DataClassifier import DataClassifierClass
 from classes.DataWrangler import DataWranglerClass
-import numpy as np
+# import numpy as np
 
 
 def all_functions(name: str) -> int:
     # print('Import all functions to this file and run only this file: ', end = '')
     # print(name)
 
-    dataset = DataWranglerClass('/Users/pranavchatur/Fair-data-splits/data/student.csv', cols_to_encode = None)
+    dataset = DataWranglerClass('<abs-path>/Fair-data-splits/data/student.csv', cols_to_encode = None)
     # dataset.convert_yn_tf_to_binary(cols_to_encode=['age'])
     dataset.convert_yn_tf_to_binary(cols_to_encode = None)
     df = dataset.get_processed_dataframe()
     print(df)
 
-    ls1 = df['name'].values.tolist()
-    ls2 = df['hired'].values.tolist()
-    print(ls1)
-    print(ls2)
-    cor = np.corrcoef(ls1, ls2)
-    print(cor)
+    # Data Exploring here
+
+    # ls1 = df['name'].values.tolist();ls2 = df['hired'].values.tolist()
+    # print(ls1);print(ls2)
+    # cor = np.corrcoef(ls1, ls2)
+    # print(cor)
 
     # Data Splitting here
 
