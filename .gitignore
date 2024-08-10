@@ -6,3 +6,6 @@
 .editorconfig
 .hooks4git.ini
 tags
+output
+output.txt
+__pycache__
