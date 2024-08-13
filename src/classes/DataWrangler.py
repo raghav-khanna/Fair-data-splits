@@ -16,6 +16,7 @@ from typing import Dict as dict
 from typing import List as list
 import pandas as pd
 from utils.LogHandling import log_err, log_prog
+from typing import Union
 
 
 class DataWranglerClass:
@@ -39,7 +40,7 @@ class DataWranglerClass:
 
     __handle_missing_options: list[str] = ['delete', 'leave', 'error', 'mean', 'median']
 
-    def __init__(self, file_path: str, handle_missing: str = 'leave', cols_to_encode: list[str] | None = []):
+    def __init__(self, file_path: str, handle_missing: str = 'leave', cols_to_encode: Union[list[str], None] = []):
         log_prog('Enter classes/' + type(self).__name__ + '.constructor')
 
         log_prog('Perform parameter pre-checks')
@@ -74,7 +75,7 @@ class DataWranglerClass:
         log_err('TODO: Handle for each case in' + str(self.__handle_missing_options))
         log_prog('Exit classes/' + type(self).__name__ + '.clean_data')
 
-    def __one_hot_encoder(self, cols_to_encode: list[str] | None = []) -> pd.DataFrame:
+    def __one_hot_encoder(self, cols_to_encode: Union[list[str], None] = []) -> pd.DataFrame:
         log_prog('Enter classes/' + type(self).__name__ + '.one_hot_encoder')
         log_prog('Perform parameter pre-checks')
         if cols_to_encode is None:
@@ -102,7 +103,7 @@ class DataWranglerClass:
         log_prog('Exit classes/' + type(self).__name__ + '.one_hot_encoder')
         return self.__dataset
 
-    def convert_yn_tf_to_binary(self, cols_to_encode: list[str] | None = []) -> None:
+    def convert_yn_tf_to_binary(self, cols_to_encode: Union[list[str], None] = []) -> None:
         log_prog('Enter classes/' + type(self).__name__ + '.convert_yn_tf_to_binary')
         log_prog('Perform parameter pre-checks')
         if cols_to_encode is None:
@@ -118,8 +119,8 @@ class DataWranglerClass:
         log_prog('Complete parameter pre-checks')
         for column in cols_to_encode:
             log_prog('Encode column "' + str(column) + '"')
-            self.__dataset[column].replace(['True', 'T', 'true', 't', 'yes', 'Yes', 'Y', 'y', '1'], 1, inplace=True)
-            self.__dataset[column].replace(['False', 'F', 'false', 'f', 'no', 'No', 'N', 'n', '0'], 0, inplace=True)
+            self.__dataset[column].replace(['True', 'T', 'true', 't', 'yes', 'Yes', 'Y', 'y', '1'], 1, inplace = True)
+            self.__dataset[column].replace(['False', 'F', 'false', 'f', 'no', 'No', 'N', 'n', '0'], 0, inplace = True)
         log_prog('Exit classes/' + type(self).__name__ + '.convert_yn_tf_to_binary')
 
     def get_processed_dataframe(self) -> pd.DataFrame:
