@@ -2,7 +2,7 @@
 # Description: This class is used to calculate the fairness metric of the model (Using the paper - Fairness definitions explained by Sahil et al)
 # Following methods -
 # 1. __init__ - Constructor (Initializes the class variables)
-# 2. 
+# 2.
 
 
 from typing import List, Union
@@ -17,11 +17,11 @@ class FairMetricClass:
                 sensitive_attribute_index: int,  # The index of the sensitive attribute in the dataset
                 sensitive_attribute_value: int,  # The value of the sensitive attribute (assuming binary sensitive attribute)
                 ) -> None:
-                
+
         if sensitive_attribute_index >= len(classification_output[0][0]) :
             logging.error('Invalid sensitive attribute index')
             return
-        
+
         self.__classification_output: list[tuple[list[any], any, any]] = classification_output
         self.__sensitive_attribute_index: int = sensitive_attribute_index
         self.__sensitive_attribute_value: int = sensitive_attribute_value
@@ -64,7 +64,7 @@ class FairMetricClass:
             elif group[i][1] == 1 and group[i][2] == 1:
                 confusion_matrix[1][1] += 1
         return confusion_matrix
-    
+
     def __display_confusion_matrix(self, confusion_mat: list[list[int]]) -> None:
         # Assuming confusion_matrix is in the form [[TN, FP], [FN, TP]]
         logging.debug(f"True Negative: {confusion_mat[0][0]}  | False Positive: {confusion_mat[0][1]}\n")
@@ -77,10 +77,10 @@ class FairMetricClass:
         return num / den
 
     def check_multiple(
-        self, 
+        self,
         metrics_list: Union[
-            'statistical_parity', 
-            'conditional_parity', 
+            'statistical_parity',
+            'conditional_parity',
             'equalized_odds',
             'equal_opportunity',
             'predictive_equality',
@@ -98,7 +98,7 @@ class FairMetricClass:
                 metric_func_call = getattr(self, metric_func_name)()
                 print(metric_func_call)
             else:
-                if resolving_feature_index == -1: 
+                if resolving_feature_index == -1:
                     logging.error('Please give valid resolving feature index for conditional parity')
                 else:
                     metric_func_name = 'check_{}'.format(metric)
@@ -109,16 +109,16 @@ class FairMetricClass:
         # Statistical parity check
         logging.info("************Statistical Parity************")
         protected_group_acceptance_rate: float = self.__divide(
-                self.__protected_confusion_mat[1][1] + self.__protected_confusion_mat[0][1] , 
+                self.__protected_confusion_mat[1][1] + self.__protected_confusion_mat[0][1] ,
                 self.__protected_confusion_mat[0][0] + self.__protected_confusion_mat[0][1]
                 + self.__protected_confusion_mat[1][0] + self.__protected_confusion_mat[1][1]
             )
         unprotected_group_acceptance_rate: float = self.__divide(
                 self.__unprotected_confusion_mat[1][1] + self.__unprotected_confusion_mat[0][1] ,
-                self.__unprotected_confusion_mat[0][0] + self.__unprotected_confusion_mat[0][1] 
+                self.__unprotected_confusion_mat[0][0] + self.__unprotected_confusion_mat[0][1]
                 + self.__unprotected_confusion_mat[1][0] + self.__unprotected_confusion_mat[1][1]
             )
-        
+
         logging.info('Protected Group Acceptance Rate: {}'.format(protected_group_acceptance_rate))
         logging.info('Unprotected Group Acceptance Rate: {}'.format(unprotected_group_acceptance_rate))
         logging.info("*******************************************")
@@ -198,7 +198,7 @@ class FairMetricClass:
 
     def check_conditional_use_accuracy_equality(self) -> tuple[bool, dict]:
         print("************Conditional Use Accuracy Equality************")
-        
+
         # Calculate positive and negative predictive values for both groups
         protected_group_ppv: float = self.__divide(self.__protected_confusion_mat[1][1], self.__protected_confusion_mat[1][1] + self.__protected_confusion_mat[0][1])
         unprotected_group_ppv: float = self.__divide(self.__unprotected_confusion_mat[1][1], self.__unprotected_confusion_mat[1][1] + self.__unprotected_confusion_mat[0][1])
