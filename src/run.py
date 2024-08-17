@@ -1,4 +1,5 @@
 from classes.DataClassifier import DataClassifierClass
+from classes.DataExplorer import DataExplorerClass
 from classes.DataSplit import DataSplit
 from classes.DataWrangler import DataWranglerClass
 # import numpy as np
@@ -13,6 +14,8 @@ def all_functions(name: str) -> int:
     dataset.convert_yn_tf_to_binary(cols_to_encode = None)
     df = dataset.get_processed_dataframe()
     print(df)
+
+    DataExplorerClass(df, target_column_name = 'hired')
 
     # Data Splitting here
     dataSplitter = DataSplit(df)
