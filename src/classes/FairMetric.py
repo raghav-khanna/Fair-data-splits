@@ -92,9 +92,18 @@ class FairMetricClass:
         resolving_feature_value = -1
         ) -> None:
 
-        print(resolving_feature_index)
         for metric in metrics_list:
-            print(metric)
+            if metric != 'conditional_parity':
+                metric_func_name = 'check_{}'.format(metric)
+                metric_func_call = getattr(self, metric_func_name)()
+                print(metric_func_call)
+            else:
+                if resolving_feature_index == -1: 
+                    logging.error('Please give valid resolving feature index for conditional parity')
+                else:
+                    metric_func_name = 'check_{}'.format(metric)
+                    metric_func_call = getattr(self, metric_func_name)(resolving_feature_index, resolving_feature_value)
+                    print(metric_func_call)
 
     def check_statistical_parity(self) -> tuple[bool, dict]:
         # Statistical parity check
