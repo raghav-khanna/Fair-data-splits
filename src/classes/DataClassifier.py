@@ -25,7 +25,7 @@ from typing import Union
 class DataClassifierClass:
     __classifier_mapper: dict[str, FunctionType] = {'KNN': KNeighborsClassifier, 'SVC': SVC, 'GNB': GaussianNB, 'DeT': DecisionTreeClassifier}
 
-    def __init__(self, train_set: pd.DataFrame, test_set: pd.DataFrame, target_column_name = '', classifer_name: str = 'KNN', columns_to_remove_preprocessing: Union[list[str], None] = []) -> None:
+    def __init__(self, train_set: pd.DataFrame, test_set: pd.DataFrame, target_column_name = '', columns_to_remove_preprocessing: Union[list[str], None] = []) -> None:
         log_prog('Enter classes/' + type(self).__name__ + '.constructor')
 
         log_prog('Perform parameter pre-checks')
