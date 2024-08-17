@@ -57,8 +57,8 @@ class DataClassifierClass:
         if columns_to_remove_preprocessing is not None:
             log_prog('Remove ' + str(columns_to_remove_preprocessing) + ' columns from a copy of the provided dataset')
             for column in columns_to_remove_preprocessing:
-                del train_set[column]
-                del test_set[column]
+                del copy_of_train_set[column]
+                del copy_of_test_set[column]
         else:
             log_prog('No columns to remove pre-processing')
         log_prog('Segregate labels/features/attributes from target label/feature/attribute')
