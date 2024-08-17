@@ -16,7 +16,8 @@ from typing import Dict as dict
 from typing import List as list
 import pandas as pd
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import multilabel_confusion_matrix
+from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.preprocessing import StandardScaler
 from utils.LogHandling import log_err, log_prog
 from typing import Union
@@ -62,14 +63,17 @@ class DataClassifierClass:
         else:
             log_prog('No columns to remove pre-processing')
         log_prog('Segregate labels/features/attributes from target label/feature/attribute')
+        # temp = copy_of_train_set[target_column_name].unique()
+        # temp.sort()
+        # print(temp)
         self.__y_train: [] = copy_of_train_set.pop(target_column_name).values.tolist()
         self.__y_test: [] = copy_of_test_set.pop(target_column_name).values.tolist()
         self.__x_train: [] = copy_of_train_set.values.tolist()
         self.__x_test: [] = copy_of_test_set.values.tolist()
         self.__y_predict: [] = []
         self.__result: [] = []
-        print('Model to be trained on: ', self.__x_train, 'with targets: ', self.__y_train)
-        print('Model to be tested on: ', self.__x_test, 'with targets: ', self.__y_test)
+        # print('Model to be trained on: ', self.__x_train, 'with targets: ', self.__y_train)
+        # print('Model to be tested on: ', self.__x_test, 'with targets: ', self.__y_test)
         log_prog('Exit classes/' + type(self).__name__ + '.constructor')
 
     def evaluate_using(self, classifer_name: str = '', **kwargs):
@@ -101,23 +105,31 @@ class DataClassifierClass:
         parameterised_classifier.fit(self.__x_train, self.__y_train)
         self.__y_predict: [float | str | int] = parameterised_classifier.predict(self.__x_test)
         self.__result: [[int, [float | int], str | float | int, str | float | int]] = []
-        self.__confusionMatrix = confusion_matrix(self.__y_test, self.__y_predict)
+        self.__confusionMatrix = multilabel_confusion_matrix(self.__y_test, self.__y_predict)
+        self.__accuracy = accuracy_score(self.__y_test, self.__y_predict)
+        self.__precision = precision_score(self.__y_test, self.__y_predict, average='macro')
+        self.__recall = recall_score(self.__y_test, self.__y_predict, average='macro')
+        print('********************************************************************************************')
+        print(self.__accuracy,',', self.__precision,',', self.__recall)
         for i in range(len(self.__x_test)):
             self.__result.append([i + 1, self.__x_test[i], self.__y_test[i], self.__y_predict[i]])
 
-        print('**********\nPerformance of', classifer_name, ': ')
-        print('\nTrained on:')
-        print('|Attributes|Target|')
-        for i in range(len(self.__x_train)):
-            print('|', self.__x_train[i], '  |  ', self.__y_train[i], '  |')
-        print('\n\nTest Results:')
-        print('|Id|Attributes|Expected|Predicted|')
-        for i in range(len(self.__x_test)):
-            print('|', self.__result[i][0], '|', self.__result[i][1], '  |  ', self.__result[i][2], '  |  ', self.__result[i][3], '|')
-        print('\n\n**********')
-        print('\n\nConfusion Matrix:')
-        print('| True Negative:', self.__confusionMatrix[0][0], '|False Positive:', self.__confusionMatrix[0][1], '|')
-        print('|False Negative:', self.__confusionMatrix[1][0], '| True Positive:', self.__confusionMatrix[1][1], '|')
-        print('\n\n**********')
+        # print('**********\nPerformance of', classifer_name, ': ')
+        # print('\nTrained on:')
+        # print('|Attributes|Target|')
+        # for i in range(len(self.__x_train)):
+        #     print('|', self.__x_train[i], '  |  ', self.__y_train[i], '  |')
+        # print('\n\nTest Results:')
+        # print('|Id|Attributes|Expected|Predicted|')
+        # for i in range(len(self.__x_test)):
+        #     print('|', self.__result[i][0], '|', self.__result[i][1], '  |  ', self.__result[i][2], '  |  ', self.__result[i][3], '|')
+        # print('\n\n**********')
+        # print('\n\nConfusion Matrix:')
+        # print('| True Negative:', self.__confusionMatrix[0][0], '|False Positive:', self.__confusionMatrix[0][1], '|')
+        # print('|False Negative:', self.__confusionMatrix[1][0], '| True Positive:', self.__confusionMatrix[1][1], '|')
+        # print('\n\n**********')
+        
+        # print(self.__confusionMatrix)
         log_prog('Exit classes/' + type(self).__name__ + '.evaluate')
-        return self.__result
+        results_for_metric = [x[1:] for x in self.__result]
+        return results_for_metric

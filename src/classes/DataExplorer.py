@@ -39,7 +39,7 @@ class DataExplorerClass:
             if column != target_column_name and dataset[column].dtype in self.__acceptable_column_datatypes:
                 try:
                     cor = np.corrcoef(dataset[column], dataset[target_column_name])
-                    print('Pearson Correlation value between column "' + str(column) + '" and "' + str(target_column_name) + '" is ' + str(cor[0][1]))
+                    # print('Pearson Correlation value between column "' + str(column) + '" and "' + str(target_column_name) + '" is ' + str(cor[0][1]))
                 except Exception:
                     log_err('Column "' + target_column_name + '" does not change, hence resulting in division by zero error')
                     raise

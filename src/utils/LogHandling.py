@@ -4,4 +4,5 @@ def log_err(message: str):
 
 
 def log_prog(message: str):
-    print('CHECKPOINT:' + str(message))
+    pass
+    # print('CHECKPOINT:' + str(message))
