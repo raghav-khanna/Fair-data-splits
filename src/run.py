@@ -1,4 +1,5 @@
 from classes.DataClassifier import DataClassifierClass
+from classes.DataSplit import DataSplit
 from classes.DataWrangler import DataWranglerClass
 # import numpy as np
 
@@ -13,21 +14,22 @@ def all_functions(name: str) -> int:
     df = dataset.get_processed_dataframe()
     print(df)
 
-    # Data Exploring here
-
-    # ls1 = df['name'].values.tolist();ls2 = df['hired'].values.tolist()
-    # print(ls1);print(ls2)
-    # cor = np.corrcoef(ls1, ls2)
-    # print(cor)
-
     # Data Splitting here
+    dataSplitter = DataSplit(df)
+    train_set = dataSplitter.train_set
+    test_set = dataSplitter.test_set
 
-    train_set = [[1, 1, 1], [2, 1, 1], [1, 2, 1], [-1, -1, 0], [-1, -2, 0], [-2, -1, 0]]
-    test_set = [[2, 2, 1], [-2, -2, 0], [0, 0, 0], [3, 1, 0], [3, 1, 0]]
-    clf = DataClassifierClass(train_set, test_set)
-    results = clf.evaluate(k = 2)
+    # Data Exploring here
+    # ls1 = df['studytime'].values.tolist();ls2 = df['hired'].values.tolist()
+    # print(ls1);print(ls2)
+    # if len(ls1) == len(ls2):
+    #     cor = np.corrcoef(ls1, ls2)
+    #     print(cor)
+
+    # Data Classifying here
+    clf = DataClassifierClass(train_set, test_set, target_column_name = 'hired', columns_to_remove_preprocessing = ['name'])
+    results = clf.evaluate_using(k = 2, classifer_name = 'KNN')
     print(results)
-    clf.performance()
 
     # Classifier Performance here
     return 1
