@@ -21,7 +21,7 @@ np.seterr(invalid = 'ignore')
 
 class DataExplorerClass:
 
-    __acceptable_column_datatypes = ['int64']
+    __acceptable_column_datatypes = ['int8', 'int32', 'int64', 'uint8', 'uint32', 'uint64', 'float32', 'float64', 'boolean']
 
     def __init__(self, dataframe: pd.DataFrame, target_column_name: str = '') -> None:
         log_prog('Enter classes/' + type(self).__name__ + '.constructor')
@@ -42,7 +42,11 @@ class DataExplorerClass:
         log_prog('Instantiate Object')
         self.__dataframe: pd.DataFrame = dataframe
         self.__target_column_name: str = target_column_name
+        self.__target_column_values: list[str] = sorted(dataframe[target_column_name].unique())
         log_prog('Exit classes/' + type(self).__name__ + '.constructor')
+
+    def unique_target_column_values(self) -> list[str]:
+        return self.__target_column_values
 
     def correlation_values_dataframe(self) -> pd.DataFrame:
         log_prog('Enter classes/' + type(self).__name__ + '.correlation_values_dataframe')
