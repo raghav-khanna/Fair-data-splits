@@ -1,8 +1,9 @@
 '''
 
 Data Explorer:
-1. Return dataframe of correlation values between permissible attributes and target attribute
-2. Trim provided dataframe based on minimum correlation value between permissible attributes and target attribute
+1. Return list of unique target labels
+2. Generate dataframe of correlation values between permissible attributes and target attribute
+3. Trim provided dataframe based on minimum correlation value between permissible attributes and target attribute
 
 TODO:
 - Draw visualizations
