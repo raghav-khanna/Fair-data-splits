@@ -34,8 +34,10 @@ def all_functions(name: str) -> int:
 
     # Data Classifying here
     clf = DataClassifierClass(train_set, test_set, target_column_name = target_column_name, columns_to_remove_pre_processing = columns_to_remove_right_before_classification)
-    results = clf.evaluate_using_model(classifer_name = use_model)
-    log_val(results)
+    clf.evaluate_using_model(classifer_name = use_model)
+    log_val(clf.predicted_target_appended_test_set())
+    log_val(clf.performance_metrics())
+    log_val(clf.performance_through_confusion_matrix())
 
     # Fair Metric calculator here
 
