@@ -4,23 +4,22 @@ import time
 import logging
 
 logging.getLogger('requests').setLevel(logging.ERROR)
-logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(message)s:\n") # Comment this line to stop showing the messages
+logging.basicConfig(level=30, format="%(levelname)s:%(message)s:\n") # Comment this line to stop showing the messages
 
 class DataSplit:
     # check inbuilt sklearn datasplit function as well
 
     def __init__(self, dataset: pd.DataFrame, sensitive_attribute_column: str, sensitive_attribute_value: int) -> None:
         logging.info('********** Enter DataSplit constructor **********')
-        self.__trainSet: pd.DataFrame = pd.DataFrame()
-        self.__testSet: pd.DataFrame = pd.DataFrame()
         self.__dataset: pd.DataFrame = dataset
         self.__sensitive_attribute_column: str = sensitive_attribute_column
         self.__sensitive_attribute_value: int = sensitive_attribute_value
 
-    def random_split(self, split_ratio: float = 0.1, random_state: int = int(time.time())) -> tuple:
+    def random_split(self, split_ratio: float = 0.1, random_state: int = 1) -> tuple:
         logging.info("*****Random Splitting*****")
+        # time.sleep(0.5)
         dataset = self.__dataset
-        test_set = dataset.sample(frac = split_ratio, random_state = random_state)
+        test_set = dataset.sample(frac = split_ratio)
         train_set = dataset.drop(test_set.index)
         balance_for_split = self.__calculate_balance_for_split((train_set, test_set))
         return train_set, test_set, balance_for_split

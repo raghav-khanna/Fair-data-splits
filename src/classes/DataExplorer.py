@@ -15,7 +15,7 @@ TODO:
 import pandas as pd
 import numpy as np
 from typing import Dict as dict
-from utils.LogHandling import log_err, log_prog
+from utils.LogHandling import log_err, log_prog, log_val
 
 np.seterr(invalid = 'ignore')
 
@@ -56,8 +56,7 @@ class DataExplorerClass:
             if column != self.__target_column_name and self.__dataframe[column].dtype in self.__acceptable_column_datatypes:
                 try:
                     cor = np.corrcoef(self.__dataframe[column], self.__dataframe[self.__target_column_name])
-                    # Comment below line in after merging PR #13 is merged to main
-                    # log_val('Pearson Correlation value between column "' + str(column) + '" and "' + str(self.__target_column_name) + '" is ' + str(cor[0][1]))
+                    log_val('Pearson Correlation value between column "' + str(column) + '" and "' + str(self.__target_column_name) + '" is ' + str(cor[0][1]))
                     dataframe_dict[column] = cor[0][1]
                 except Exception:
                     log_err('Column "' + self.__target_column_name + '" does not change, hence resulting in division by zero error')

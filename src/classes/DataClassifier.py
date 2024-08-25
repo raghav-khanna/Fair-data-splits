@@ -23,7 +23,11 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, confu
 from sklearn.preprocessing import StandardScaler
 from utils.LogHandling import log_err, log_prog, log_val
 from typing import Union
+import warnings
+from sklearn.exceptions import UndefinedMetricWarning
 
+# Suppress the UndefinedMetricWarning
+warnings.filterwarnings("ignore", category=UndefinedMetricWarning)
 
 class DataClassifierClass:
     __classifier_mapper: dict[str, FunctionType] = {'KNN': KNeighborsClassifier, 'SVC': SVC, 'GNB': GaussianNB, 'DeT': DecisionTreeClassifier}
@@ -113,9 +117,9 @@ class DataClassifierClass:
             parameterised_classifier = DecisionTreeClassifier()
 
         log_prog('Train the model over training data')
-        log_val('|Attributes|Target|')
-        for i in range(len(x_train)):
-            log_val('|', x_train[i], '  |  ', y_train[i], '  |')
+        log_val('|Attributes|Target|',disable=True)
+        # for i in range(len(x_train)):
+            # log_val('|', x_train[i], '  |  ', y_train[i], '  |')
         parameterised_classifier.fit(x_train, y_train)
 
         log_prog('Test the model over testing data')
@@ -123,6 +127,7 @@ class DataClassifierClass:
 
         log_prog('Append the predicted values of target column "' + str(self.__target_column_name) + '" as "' + str(self.__target_column_name) + '_predicted" to the dataframe')
         self.__updated_test_set = copy_of_test_set
+        self.__updated_test_set[str(self.__target_column_name)] = y_test
         self.__updated_test_set[str(self.__target_column_name) + '_predicted'] = y_predict
 
         log_prog('Calculate metrics: accuract, precision, recall')

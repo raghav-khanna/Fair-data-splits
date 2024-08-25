@@ -10,8 +10,8 @@ import pandas as pd
 import logging
 from sklearn.metrics import confusion_matrix
 
-logging.getLogger('requests').setLevel(logging.ERROR)
-logging.basicConfig(level=logging.DEBUG, format="%(message)s\n") # Comment this line to stop showing the messages
+# logging.getLogger('requests').setLevel(logging.ERROR)
+logging.basicConfig(level=30, format="%(message)s\n") # Comment this line to stop showing the messages
 
 class FairMetricClass:
 
@@ -22,6 +22,8 @@ class FairMetricClass:
                 pred_column_name: str
             ) -> None:
 
+        logging.info("************Fairness Metric initialization************")
+        
         if classification_output[sensitive_attribute_column] is None:
             logging.error('Sensitive attribute column not found')
             return
@@ -48,11 +50,10 @@ class FairMetricClass:
         self.__protected_confusion_mat = self.__create_confusion_matrix(self.__protected_group)
         self.__unprotected_confusion_mat = self.__create_confusion_matrix(self.__unprotected_group)
 
-        logging.info("************Fairness Metric initialization************")
         logging.info('Sensitive Attribute Column: {}'.format(self.__sensitive_attribute_column))
         logging.info('Sensitive Attribute Value: {}'.format(self.__sensitive_attribute_value))
-        logging.info('Protected Group -> {}'.format(self.__protected_group))
-        logging.info('Unprotected Group -> {}'.format(self.__unprotected_group))
+        logging.debug('Protected Group -> {}'.format(self.__protected_group))
+        logging.debug('Unprotected Group -> {}'.format(self.__unprotected_group))
         logging.debug('*********** Protected Group confusion matrix ***********')
         self.__display_confusion_matrix(self.__protected_confusion_mat)
         logging.debug('*********** Unprotected Group confusion matrix ***********')
@@ -66,16 +67,19 @@ class FairMetricClass:
         confusion_mat = confusion_matrix(y_true, y_pred)
         confusion_mat_total = sum(sum(row) for row in confusion_mat)
         print(confusion_mat)
-        binary_confusion_matrix: List[List[int]] = [[0, 0], [0, 0]]  # [[TN, FP], [FN, TP]]
-        for k in range (len(confusion_mat)):
-            # Get TP from confusion matrix
-            binary_confusion_matrix[1][1] += confusion_mat[k][k]
-            # Get FP from confusion matrix
-            binary_confusion_matrix[0][1] += sum(confusion_mat[k]) - confusion_mat[k][k]
-            # Get FN from confusion matrix
-            binary_confusion_matrix[1][0] += sum(confusion_mat[i][k] for i in range(len(confusion_mat)) if i != k)
-            # Get TN from confusion matrix
-            binary_confusion_matrix[0][0] += confusion_mat_total - binary_confusion_matrix[0][1] - binary_confusion_matrix[1][0] - binary_confusion_matrix[1][1]
+        if len(confusion_mat) > 2:
+            binary_confusion_matrix: List[List[int]] = [[0, 0], [0, 0]]  # [[TN, FP], [FN, TP]]
+            for k in range (len(confusion_mat)):
+                # Get TP from confusion matrix
+                binary_confusion_matrix[1][1] += confusion_mat[k][k]
+                # Get FP from confusion matrix
+                binary_confusion_matrix[0][1] += sum(confusion_mat[k]) - confusion_mat[k][k]
+                # Get FN from confusion matrix
+                binary_confusion_matrix[1][0] += sum(confusion_mat[i][k] for i in range(len(confusion_mat)) if i != k)
+                # Get TN from confusion matrix
+                binary_confusion_matrix[0][0] += confusion_mat_total - binary_confusion_matrix[0][1] - binary_confusion_matrix[1][0] - binary_confusion_matrix[1][1]
+        else:
+            binary_confusion_matrix = confusion_mat
 
         print("******************************************")
         return binary_confusion_matrix
