@@ -1,30 +1,41 @@
 '''
 
-Data Explorer:
-1. Return list of unique target labels
-2. Generate dataframe of correlation values between permissible attributes and target attribute
-3. Trim provided dataframe based on minimum correlation value between permissible attributes and target attribute
+Class Data Explorer:
+- Implements
+    - Indicate presence of cardinal attributes making dataset unfit for training a model
+    - Generate dataframe of correlation values between features and target attribute
+    - Trim provided dataframe based on provided minimum correlation value between features and target attribute
+    - Return all the unique target labels present in the dataset
 
-TODO:
-- Draw visualizations
-- Principle Component Analysis (PCA)
+- Parameters in the constructor
+    - dataframe: pd.Dataframe => DataFrame that contains the data to be explored. Warning is thrown if the data contains cardinal features.
+    - target_column_name: str => Name of the target attribute
 
+- Public methods
+    - unique_target_column_values: Returns a list of all the unique target labels present in the dataset
+    - correlation_values_dataframe: Returns a dataframe whose headers are the dataset attributes and the single row contains correlation values between target attribute and corresponding feature
+    - trim_columns_with_correlation_less_than: Return a modified dataframe which contains only those features which have correlation value greater than the user-specified value
+        - min_correlation: float = Takes input the minimum correlation value for the feature to be used for training the model. Must be between 0 and 1
+
+- TODO
+    - Plot visualizations to understand how the data looks like
+    - Principle Component Analysis (PCA)
 
 '''
 
 import pandas as pd
 import numpy as np
 from typing import Dict as dict
-from utils.LogHandling import log_err, log_prog
+from utils.LogHandling import log_err, log_prog, log_val
 
 np.seterr(invalid = 'ignore')
 
 
 class DataExplorerClass:
 
-    __acceptable_column_datatypes = ['int8', 'int32', 'int64', 'uint8', 'uint32', 'uint64', 'float32', 'float64', 'boolean']
+    __acceptable_column_datatypes = ['int8', 'int32', 'int64', 'uint8', 'uint32', 'uint64', 'float32', 'float64']
 
-    def __init__(self, dataframe: pd.DataFrame, target_column_name: str = '') -> None:
+    def __init__(self, dataframe: pd.DataFrame = pd.DataFrame(), target_column_name: str = '') -> None:
         log_prog('Enter classes/' + type(self).__name__ + '.constructor')
         log_prog('Perform parameter pre-checks')
         premature_return: bool = False
@@ -44,6 +55,10 @@ class DataExplorerClass:
         self.__dataframe: pd.DataFrame = dataframe
         self.__target_column_name: str = target_column_name
         self.__target_column_values: list[str] = sorted(dataframe[target_column_name].unique())
+        cardinal_dataframe: pd.DataFrame = self.__dataframe.select_dtypes(exclude = self.__acceptable_column_datatypes)
+        for column in cardinal_dataframe.columns:
+            if column != self.__target_column_name:
+                log_err('Column "' + str(column) + '" is not of type numeric. The dataset is unfit for training the model. Please remove or one-hot encode the column')
         log_prog('Exit classes/' + type(self).__name__ + '.constructor')
 
     def unique_target_column_values(self) -> list[str]:
@@ -56,8 +71,7 @@ class DataExplorerClass:
             if column != self.__target_column_name and self.__dataframe[column].dtype in self.__acceptable_column_datatypes:
                 try:
                     cor = np.corrcoef(self.__dataframe[column], self.__dataframe[self.__target_column_name])
-                    # Comment below line in after merging PR #13 is merged to main
-                    # log_val('Pearson Correlation value between column "' + str(column) + '" and "' + str(self.__target_column_name) + '" is ' + str(cor[0][1]))
+                    log_val('Pearson Correlation value between column "' + str(column) + '" and "' + str(self.__target_column_name) + '" is ' + str(cor[0][1]))
                     dataframe_dict[column] = cor[0][1]
                 except Exception:
                     log_err('Column "' + self.__target_column_name + '" does not change, hence resulting in division by zero error')
@@ -66,7 +80,7 @@ class DataExplorerClass:
         log_prog('Exit classes/' + type(self).__name__ + '.correlation_values_dataframe')
         return pd.DataFrame(data = [dataframe_dict])
 
-    def trim_columns_with_correlation_less_than(self, min_correlation: float = 0.0):
+    def trim_columns_with_correlation_less_than(self, min_correlation: float = 0.0) -> pd.DataFrame:
         log_prog('Enter classes/' + type(self).__name__ + '.trim_columns_with_correlation_less_than')
         log_prog('Perform parameter pre-checks')
         premature_return: bool = False
