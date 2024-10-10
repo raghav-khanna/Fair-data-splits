@@ -1,13 +1,31 @@
 '''
 
-TODO: Document the file-functioning well.
+Class Data Classifier:
 
-DataClassifier:
-- Methods
-    - evaluate_using_model
-    - predicted_target_appended_test_set
-    - performance_metrics
-    - performance_through_confusion_matrix
+- Implements
+    - Train and Test the specified classification model
+    - Calculate performance metrics: accuracy, precision and recall for the evaluation
+    - Return (list of) confusion matrix(s) for the evaluation
+
+- Parameters in the constructor
+    - train_set: pd.DataFrame => DataFrame containing the data over which the model has to be trained
+    - test_set: pd.DataFrame => DataFrame containing the data over which the model has to be tested
+    - target_column_name: str => Name of the target column in the dataset
+    - columns_to_remove_pre_processing: list[str] => List of column names to remove before training the model (like id, name...). Pass None if no such column
+
+- Public Methods
+    - evaluate_using_model => Train and subsequently test the model
+        - classifer_name: str => Name of the classifier to be used for classification
+        - kwargs
+            - k: int => K of the KNeighborsClassifier in case of KNN classifier
+    - performance_metrics => Return the dictionary of performance metrics, key being the metric and value being the value of the metric after evaluation
+    - performance_through_confusion_matrix => Return the (list of) confusion_matrix(s) after evaluation
+    - predicted_target_appended_test_set => Return updated test set which also contains the predicted target attribute by the classifier
+
+- TODO
+    - Look into the different kwargs available for SVC, GNB and other models to optimise the performance of the classifier
+    - Find ways to display confusion matrices gracefully
+    - Follow https://scikit-learn.org/stable/machine_learning_map.html and automatically choose the best classifier without taking it as input from user
 
 '''
 from types import FunctionType
@@ -27,7 +45,7 @@ from typing import Union
 
 class DataClassifierClass:
     __classifier_mapper: dict[str, FunctionType] = {'KNN': KNeighborsClassifier, 'SVC': SVC, 'GNB': GaussianNB, 'DeT': DecisionTreeClassifier}
-    __acceptable_column_datatypes = ['int8', 'int32', 'int64', 'uint8', 'uint32', 'uint64', 'float32', 'float64', 'boolean']
+    __acceptable_column_datatypes: list[str] = ['int8', 'int32', 'int64', 'uint8', 'uint32', 'uint64', 'float32', 'float64']
     __train_set: pd.DataFrame = pd.DataFrame()
     __test_set: pd.DataFrame = pd.DataFrame()
     __target_column_name: str = ''
@@ -95,8 +113,6 @@ class DataClassifierClass:
         x_train: list = copy_of_train_set.values.tolist()
         x_test: list = copy_of_test_set.values.tolist()
 
-        # TODO: Add logic of sklearn flow chart to choose the classifier here as a default case
-
         parameterised_classifier = []
         log_prog('Select ' + str(classifer_name) + ' as a classifier')
         if self.__classifier_mapper[classifer_name] == KNeighborsClassifier:
@@ -113,9 +129,9 @@ class DataClassifierClass:
             parameterised_classifier = DecisionTreeClassifier()
 
         log_prog('Train the model over training data')
-        log_val('|Attributes|Target|')
-        for i in range(len(x_train)):
-            log_val('|', x_train[i], '  |  ', y_train[i], '  |')
+        log_val('|Attributes|Target|', disable = True)
+        # for i in range(len(x_train)):
+        #     log_val('|', x_train[i], '  |  ', y_train[i], '  |')
         parameterised_classifier.fit(x_train, y_train)
 
         log_prog('Test the model over testing data')
@@ -123,6 +139,7 @@ class DataClassifierClass:
 
         log_prog('Append the predicted values of target column "' + str(self.__target_column_name) + '" as "' + str(self.__target_column_name) + '_predicted" to the dataframe')
         self.__updated_test_set = copy_of_test_set
+        self.__updated_test_set[str(self.__target_column_name)] = y_test
         self.__updated_test_set[str(self.__target_column_name) + '_predicted'] = y_predict
 
         log_prog('Calculate metrics: accuract, precision, recall')
