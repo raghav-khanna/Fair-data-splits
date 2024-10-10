@@ -58,7 +58,7 @@ class DataWranglerClass:
 
         log_prog('Retrieve data from provided location')
         file_extension: str = os.path.splitext(file_path)[1]
-        self.__dataset: pd.DataFrame = self.__readers[file_extension](file_path, sep=',')
+        self.__dataset: pd.DataFrame = self.__readers[file_extension](file_path, sep=';')
 
         log_prog('Clean data')
         self.__dataset = self.__clean_data(handle_missing)

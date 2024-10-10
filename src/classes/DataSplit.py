@@ -4,7 +4,8 @@ import time
 import logging
 
 logging.getLogger('requests').setLevel(logging.ERROR)
-logging.basicConfig(level=30, format="%(levelname)s:%(message)s:\n") # Comment this line to stop showing the messages
+logging.basicConfig(level = 30, format = "%(levelname)s:%(message)s:\n")  # Comment this line to stop showing the messages
+
 
 class DataSplit:
     # check inbuilt sklearn datasplit function as well
@@ -46,5 +47,3 @@ class DataSplit:
         logging.info(f"Train set balance: {train_set_balance}")
         logging.info(f"Test set balance: {test_set_balance}")
         return min(train_set_balance, test_set_balance)
-
-

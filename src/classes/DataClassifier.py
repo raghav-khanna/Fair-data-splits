@@ -27,7 +27,8 @@ import warnings
 from sklearn.exceptions import UndefinedMetricWarning
 
 # Suppress the UndefinedMetricWarning
-warnings.filterwarnings("ignore", category=UndefinedMetricWarning)
+warnings.filterwarnings("ignore", category = UndefinedMetricWarning)
+
 
 class DataClassifierClass:
     __classifier_mapper: dict[str, FunctionType] = {'KNN': KNeighborsClassifier, 'SVC': SVC, 'GNB': GaussianNB, 'DeT': DecisionTreeClassifier}
@@ -84,11 +85,11 @@ class DataClassifierClass:
         if self.__train_set.empty or self.__test_set.empty:
             log_prog('Object configured incorrectly, it cannot be trained. Please pass correct data in the class constructor')
             premature_return = True
-        for column in copy_of_train_set:
-            if column is not self.__target_column_name and copy_of_train_set[column].dtype not in self.__acceptable_column_datatypes:
-                log_err('Column "' + str(column) + '" is not a number and is therefore dropped. Please one-hot-encode it using DataWrangler if it needs to be used for training')
-                del copy_of_train_set[column]
-                del copy_of_test_set[column]
+        # for column in copy_of_train_set:
+        #     if column is not self.__target_column_name and copy_of_train_set[column].dtype not in self.__acceptable_column_datatypes:
+        #         log_err('Column "' + str(column) + '" is not a number and is therefore dropped. Please one-hot-encode it using DataWrangler if it needs to be used for training')
+        #         del copy_of_train_set[column]
+        #         del copy_of_test_set[column]
         if premature_return:
             return
         log_prog('Complete parameter pre-checks')
@@ -117,9 +118,9 @@ class DataClassifierClass:
             parameterised_classifier = DecisionTreeClassifier()
 
         log_prog('Train the model over training data')
-        log_val('|Attributes|Target|',disable=True)
+        log_val('|Attributes|Target|', disable = True)
         # for i in range(len(x_train)):
-            # log_val('|', x_train[i], '  |  ', y_train[i], '  |')
+        # log_val('|', x_train[i], '  |  ', y_train[i], '  |')
         parameterised_classifier.fit(x_train, y_train)
 
         log_prog('Test the model over testing data')
