@@ -139,6 +139,7 @@ class DataClassifierClass:
 
         log_prog('Append the predicted values of target column "' + str(self.__target_column_name) + '" as "' + str(self.__target_column_name) + '_predicted" to the dataframe')
         self.__updated_test_set = copy_of_test_set
+        self.__updated_test_set[str(self.__target_column_name)] = y_test
         self.__updated_test_set[str(self.__target_column_name) + '_predicted'] = y_predict
 
         log_prog('Calculate metrics: accuract, precision, recall')
